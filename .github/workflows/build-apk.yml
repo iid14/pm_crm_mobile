@@ -23,17 +23,22 @@ jobs:
         working-directory: pm_crm_mobile
         run: flutter create --platforms=android --org com.pmint.crm --project-name pm_crm_mobile .
 
-      - name: Fix Android SDK requirements (compileSdk 36)
+      - name: Install dependencies
+        working-directory: pm_crm_mobile
+        run: flutter pub get
+
+      - name: Fix compileSdk 36 (приложение + плагины)
         working-directory: pm_crm_mobile
         run: |
           sed -i 's/flutter\.compileSdkVersion/36/' android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || true
           echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
-          echo "---- compileSdk в app:" && grep -n "compileSdk" android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || true
-          echo "---- gradle.properties (конец):" && tail -n 5 android/gradle.properties
-
-      - name: Install dependencies
-        working-directory: pm_crm_mobile
-        run: flutter pub get
+          PUB="$HOME/.pub-cache/hosted/pub.dev"
+          if [ -d "$PUB" ]; then
+            grep -rl "flutter.compileSdkVersion" "$PUB" --include=build.gradle --include=build.gradle.kts 2>/dev/null | xargs -r sed -i 's/flutter\.compileSdkVersion/36/' || true
+            find "$PUB" -path "*/android/*" \( -name "build.gradle" -o -name "build.gradle.kts" \) 2>/dev/null | xargs -r sed -i -E '/^[[:space:]]*compileSdk(Version)?/ s/3[0-9]/36/' || true
+          fi
+          echo "---- app:" && grep -n "compileSdk" android/app/build.gradle.kts || true
+          echo "---- patched plugins:" && grep -rl "compileSdk" "$PUB" --include=build.gradle --include=build.gradle.kts 2>/dev/null | grep -i file_picker | head -n 3 || true
 
       - name: Analyze
         working-directory: pm_crm_mobile
