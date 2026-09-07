@@ -71,7 +71,7 @@ class AppDb {
       where.add('status = ?');
       args.add(statusFilter);
     }
-    final q = (search ?? '').trim();
+    final q = search.trim();
     if (q.isNotEmpty) {
       where.add('(name LIKE ? OR phone LIKE ? OR tg_phone LIKE ?)');
       final like = '%$q%';
