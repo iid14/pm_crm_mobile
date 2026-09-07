@@ -23,11 +23,13 @@ jobs:
         working-directory: pm_crm_mobile
         run: flutter create --platforms=android --org com.pmint.crm --project-name pm_crm_mobile .
 
-      - name: Bump compileSdk to 36 (требование file_picker)
+      - name: Fix Android SDK requirements (compileSdk 36)
         working-directory: pm_crm_mobile
         run: |
-          sed -i 's/flutter.compileSdkVersion/36/' android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || true
-          grep -n "compileSdk" android/app/build.gradle.kts || true
+          sed -i 's/flutter\.compileSdkVersion/36/' android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || true
+          echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
+          echo "---- compileSdk в app:" && grep -n "compileSdk" android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || true
+          echo "---- gradle.properties (конец):" && tail -n 5 android/gradle.properties
 
       - name: Install dependencies
         working-directory: pm_crm_mobile
