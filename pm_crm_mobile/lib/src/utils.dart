@@ -1,4 +1,4 @@
-// Вспомогательные функции: даты, телефоны, буфер обмена, ссылки.
+// Вспомогательные функции: даты, телефоны, буфер обмена.
 
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -26,8 +26,7 @@ DateTime? parseDate(String? raw) {
   }
   final d = RegExp(r'^(\d{1,2})\.(\d{1,2})\.(\d{4})').firstMatch(s);
   if (d != null) {
-    return DateTime.tryParse(
-        '${d.group(3)}-${d.group(2)}-${d.group(1)}');
+    return DateTime.tryParse('${d.group(3)}-${d.group(2)}-${d.group(1)}');
   }
   return null;
 }
@@ -48,9 +47,9 @@ String fmtStamp(String raw) {
 
 /// Нормализация телефона: '+7 999 123-45-67' -> '+79991234567'.
 String normalizePhone(String raw) {
-  var s = (raw ?? '').trim();
+  final s = raw.trim();
   if (s.startsWith('+')) {
-    return '+' + s.replaceAll(RegExp(r'[^\d]'), '');
+    return '+${s.replaceAll(RegExp(r'[^\d]'), '')}';
   }
   return s.replaceAll(RegExp(r'[^\d]'), '');
 }
@@ -60,9 +59,12 @@ Future<void> copyToClipboard(BuildContext context, String text) async {
   if (text.isEmpty) return;
   await Clipboard.setData(ClipboardData(text: text));
   if (context.mounted) {
+    final short = text.length > 60 ? '${text.substring(0, 60)}…' : text;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Скопировано: ${text.length > 60 ? text.substring(0, 60) + '…' : text}')),
-      duration: const Duration(seconds: 2),
+      SnackBar(
+        content: Text('Скопировано: $short'),
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 }
